@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+
+if not type sqlite3 >/dev/null 2>&1 ; then
+        echo "Yo, you need to install SQLite3";
+				exit 0;
+else
+				echo "Awesome Job! You installed SQLite3 already";
+fi
+
+echo "Creating Directory ~/.git-mark"
+
+mkdir ~/.git-mark
+
+echo "Creating git-mark database"
+
+
+sqlite3 ~/.git-mark/gitmark.db "create table marks (branch string, file string)"
+
+chmod -R 777 ~/.git-mark 
+
+
+
+echo "Copying files to your /usr/local/bin"
+
+cp ./git-mark /usr/local/bin
+
+chmod u+x /usr/local/bin/git-mark
+
+echo "Cool, it's done"
+
+

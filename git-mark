@@ -1,0 +1,71 @@
+#!/usr/bin/env sh
+version() {
+	echo "git-mark v0.1.0"
+	echo
+}
+
+usage() {
+	echo "usage:git mark <subcommand> <file name>"
+	echo
+	echo "Available commands:"
+	echo "-u unmark file for current branch"
+	echo "-all view all marked files for current branch"
+	echo "-h help"
+	echo 
+	echo "Note: Jason, I know something like this probably already exists for vim! You don't need to tell me!"
+	echo
+}
+
+add() {
+	branch_name=$1
+	file=$2
+	note=$3
+		sqlite3 ~/.git-mark/gitmark.db "insert into marks values(\"$branch_name\",\"$file\")"
+		echo "$branch_name marked $file"
+}
+
+remove() {
+	branch_name=$1
+	file=$2
+	sqlite3 ~/.git-mark/gitmark.db "delete from marks where branch='$branch_name' and file='$file'"
+	echo "$branch_name unmarked $file"
+}
+
+all() {
+	branch_name=$1
+	echo "Marked files for branch $branch_name"
+  sqlite3 ~/.git-mark/gitmark.db "select file from marks where branch=\"$branch_name\""
+
+}
+
+main() {
+
+	if [ "$#" -lt 1 ]; then
+		usage; exit 1
+	fi
+
+	local subcommand="$1"; shift
+	local file="$1"; shift
+
+
+	branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+ 	branch_name="(unnamed branch)"     # detached HEAD
+  branch_name=${branch_name##refs/heads/}	
+
+	case $subcommand in
+		"-h")
+			usage; exit 0
+			;;	
+		"-m")
+			add "$branch_name" "$file"; exit 0
+			;;
+		"-u")
+			remove "$branch_name" "$file"; exit 0
+			;;
+		"-all")
+			all "$branch_name"; exit 0
+			;;
+	esac	
+}
+
+main "$@"
